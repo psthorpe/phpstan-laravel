@@ -223,6 +223,17 @@ class IntegrationTest extends PHPStanTestCase
             [54 => ['Call to an undefined method IntegrationManagers\ContractManager::notInContract().']],
         ];
 
+        if (laravel_version_compare('13.44.0', '>=')) {
+            yield 'enum-default-managers' => [
+                __DIR__ . '/data/l13-manager-defaults.php',
+                [
+                    11 => ['Call to an undefined method Managers\EnumDefaultManager::other().'],
+                    13 => ['Call to an undefined method Managers\PureEnumDefaultManager::other().'],
+                ],
+                true,
+            ];
+        }
+
         yield [
             __DIR__ . '/data/model-property-builder.php',
             [

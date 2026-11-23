@@ -157,6 +157,7 @@ class GeneralTypeTest extends TypeInferenceTestCase
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-cache-remember.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-eloquent-builder-model-keys.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-http-client-query.php');
+            yield from self::gatherAssertTypes(__DIR__ . '/data/l13-managers.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-model-class-properties.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-model-counter-methods.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l13-model-serialization.php');
@@ -164,6 +165,10 @@ class GeneralTypeTest extends TypeInferenceTestCase
             yield from self::gatherAssertTypes(__DIR__ . '/data/l12-builder-attributes.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l12-model-class-properties.php');
             yield from self::gatherAssertTypes(__DIR__ . '/data/l12-model-counter-methods.php');
+        }
+
+        if (laravel_version_compare('13.44.0', '>=')) {
+            yield from self::gatherAssertTypes(__DIR__ . '/data/l13-manager-defaults.php');
         }
 
         //##############################################################################################################

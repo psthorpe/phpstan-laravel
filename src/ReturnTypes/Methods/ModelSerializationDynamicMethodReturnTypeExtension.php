@@ -8,6 +8,7 @@ use CalebDW\PhpstanLaravel\Schema\SchemaDependencyTracker;
 use CalebDW\PhpstanLaravel\Support\ModelCastHelper;
 use CalebDW\PhpstanLaravel\Support\ModelPropertyHelper;
 use CalebDW\PhpstanLaravel\Support\ReflectionHelper;
+use CalebDW\PhpstanLaravel\Support\TypeHelper;
 use DateTimeInterface;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
@@ -67,6 +68,7 @@ final class ModelSerializationDynamicMethodReturnTypeExtension implements Dynami
         private ReflectionProvider $reflectionProvider,
         private ReflectionHelper $reflectionHelper,
         private SchemaDependencyTracker $schemaDependencyTracker,
+        private TypeHelper $typeHelper,
     ) {
     }
 
@@ -182,7 +184,7 @@ final class ModelSerializationDynamicMethodReturnTypeExtension implements Dynami
             }
         }
 
-        return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($class, $scope, $cast, $date, $enumCast): Type {
+        return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($class, $scope, $cast, $date, $enumCast): Type {
             if ($type instanceof UnionType) {
                 return $traverse($type);
             }
@@ -214,13 +216,7 @@ final class ModelSerializationDynamicMethodReturnTypeExtension implements Dynami
             }
 
             if ($enumCast && $type->isEnum()->yes()) {
-                $values = [];
-
-                foreach ($type->getEnumCases() as $case) {
-                    $values[] = $case->getBackingValueType() ?? new ConstantStringType($case->getEnumCaseName());
-                }
-
-                return $values === [] ? new MixedType() : TypeCombinator::union(...$values);
+                return $type->getEnumCases() === [] ? new MixedType() : $this->typeHelper->enumValueOf($type);
             }
 
             return $type;

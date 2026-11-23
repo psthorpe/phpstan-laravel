@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CalebDW\PhpstanLaravel\Support;
 
+use BackedEnum;
 use Illuminate\Support\Manager;
 use Illuminate\Support\Str;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -13,6 +14,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
+use UnitEnum;
 
 use function array_key_exists;
 use function is_object;
@@ -184,15 +186,22 @@ final class ManagerHelper
         }
 
         try {
-            $driver = $concrete->getDefaultDriver();
+            $driver = $this->normalizeDefaultDriver($concrete->getDefaultDriver());
         } catch (Throwable) {
             return null;
         }
 
-        if (! is_string($driver) || $driver === '') {
-            return null;
-        }
-
         return $this->defaultDrivers[$key] = $driver;
+    }
+
+    private function normalizeDefaultDriver(mixed $driver): string|null
+    {
+        $driver = match (true) {
+            $driver instanceof BackedEnum => $driver->value,
+            $driver instanceof UnitEnum => $driver->name,
+            default => $driver,
+        };
+
+        return is_string($driver) && $driver !== '' ? $driver : null;
     }
 }

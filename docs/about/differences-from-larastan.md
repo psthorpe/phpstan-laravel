@@ -458,6 +458,11 @@ type it has, is read from the `create{Driver}Driver()` method rather than taken
 from the object the container happens to build:
 
 ```php
+enum NotifierDriver: string
+{
+    case Slack = 'slack';
+}
+
 class NotifierManager extends Manager
 {
     public function getDefaultDriver(): string
@@ -477,9 +482,20 @@ $manager->driver();
 $manager->driver('slack');
 // App\Notifier
 
+$manager->driver(NotifierDriver::Slack);
+// App\Notifier (Laravel 13+)
+
 $manager->send($message);
 // checked against Notifier, not against SlackNotifier
 ```
+
+On Laravel 13.44+, `getDefaultDriver()` can also return an enum. Its backing
+value or case name selects the default driver for `driver()` and for nullable
+driver arguments.
+
+Forwarded calls are checked against that default driver. A method available only
+on another driver is reported as undefined; select that driver explicitly before
+calling it.
 
 Two things follow from reading the declared type. The driver is never
 constructed, so one that needs credentials, a connection or a config key absent

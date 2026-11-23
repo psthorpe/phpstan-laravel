@@ -74,15 +74,16 @@ final class ManagerDriverExtension implements DynamicMethodReturnTypeExtension
             return [null];
         }
 
-        $type = $scope->getType($args[0]->value);
+        $type = $this->typeHelper->enumValueOf($scope->getType($args[0]->value));
 
         if ($type->isNull()->yes()) {
             return [null];
         }
 
         $drivers = $this->typeHelper->constantStrings($type);
+        $names   = TypeCombinator::removeNull($type);
 
-        if ($drivers === []) {
+        if ($drivers === [] || ! $names->isString()->yes() || ! $names->isConstantScalarValue()->yes()) {
             return null;
         }
 

@@ -8,10 +8,12 @@ use Closure;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 
 use function collect;
 
@@ -97,6 +99,24 @@ final class TypeHelper
             ->map($this->constantStrings(...))
             ->values()
             ->all();
+    }
+
+    /** Resolve enum cases as `enum_value()` does, preserving other values. */
+    public function enumValueOf(Type $type): Type
+    {
+        return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+            if ($type instanceof UnionType) {
+                return $traverse($type);
+            }
+
+            $values = [];
+
+            foreach ($type->getEnumCases() as $case) {
+                $values[] = $case->getBackingValueType() ?? new ConstantStringType($case->getEnumCaseName());
+            }
+
+            return $values === [] ? $type : TypeCombinator::union(...$values);
+        });
     }
 
     /**
